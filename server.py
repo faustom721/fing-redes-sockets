@@ -3,9 +3,17 @@
 import selectors
 import socket
 import types
-
+import argparse
+ 
+arg_parser = argparse.ArgumentParser(description='Server grupo 67.')
+arg_parser.add_argument('-p','--port', help='Puerto de escucha.', required=True)
+args = arg_parser.parse_args()
+ 
+print("***********************************************")
+print ("Puerto de escucha: %s" % args.port )
+print("***********************************************")
 HOST = '127.0.0.1' 
-PORT = 2020
+PORT = int(args.port) # Listening port
 
 def accept_wrapper(lis_socket):
     conn, addr = lis_socket.accept() # conn es la nueva conexión (socket) para este nuevo cliente

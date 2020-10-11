@@ -3,10 +3,23 @@
 import socket
 import selectors
 import types
+import argparse
+ 
+arg_parser = argparse.ArgumentParser(description='Cliente grupo 67.')
+arg_parser.add_argument('-hs','--host', help='Host server.',required=True)
+arg_parser.add_argument('-p','--port', help='Puerto al que se quiere conectar.', required=True)
+arg_parser.add_argument('-c','--conns', help='Número de conexiones.', required=True)
+args = arg_parser.parse_args()
+ 
+print("***********************************************")
+print ("IP server: %s" % args.host )
+print ("Puerto al que se conecta: %s" % args.port )
+print ("Conexiones a establecer: %s" % args.conns )
+print("***********************************************")
 
-HOST = '127.0.0.1'  # Server IP
-PORT = 2020        # Listening socket en el server
-CONNECTIONS = 3     # Cuántas conexiones establece
+HOST = args.host  # Server IP
+PORT = int(args.port)       # Listening socket en el server
+CONNECTIONS = int(args.conns)     # Cuántas conexiones establece
 
 sel = selectors.DefaultSelector()
 
