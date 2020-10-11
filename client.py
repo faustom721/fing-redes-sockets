@@ -11,7 +11,7 @@ arg_parser.add_argument('-hs','--host', help='Host server.',required=True)
 arg_parser.add_argument('-p','--port', help='Puerto al que se quiere conectar.', required=True)
 arg_parser.add_argument('-c','--conns', help='Número de conexiones.', required=True)
 args = arg_parser.parse_args()
- 
+
 print("***********************************************")
 print ("IP server: %s" % args.host )
 print ("Puerto al que se conecta: %s" % args.port )
