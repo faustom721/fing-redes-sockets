@@ -70,3 +70,9 @@ print('Recibido', repr(data))
 messages = [b'Mensaje 1 de cliente.', b'Mensaje 2 de cliente.']
 
 start_connections(HOST, PORT, CONNECTIONS)
+
+# Event loop
+while True:
+    events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
+    for key, mask in events:
+        service_connection(key, mask)
