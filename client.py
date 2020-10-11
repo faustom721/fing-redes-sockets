@@ -4,6 +4,7 @@ import socket
 import selectors
 import types
 import argparse
+from termcolor import colored
  
 arg_parser = argparse.ArgumentParser(description='Cliente grupo 67.')
 arg_parser.add_argument('-hs','--host', help='Host server.',required=True)
@@ -45,17 +46,19 @@ def service_connection(key, mask):
     if mask & selectors.EVENT_READ:
         recv_data = sock.recv(1024)  # Debe estar ready to read
         if recv_data:
-            print('Recibido', repr(recv_data), 'de la conexión', data.connid)
+            print(colored('Recibido:', 'green'))
+            print(repr(recv_data), 'de la conexión', data.connid)
             data.recv_total += len(recv_data)
         if not recv_data or data.recv_total == data.msg_total:
-            print('Cerrando conexión', data.connid)
+            print(colored('Cerrando conexión ' + str(data.connid), 'red'))
             sel.unregister(sock)
             sock.close()
     if mask & selectors.EVENT_WRITE:
         if not data.outb and data.messages:
             data.outb = data.messages.pop(0)
         if data.outb:
-            print('Enviando', repr(data.outb), 'a la conexión', data.connid)
+            print(colored('Enviado:', 'blue'))
+            print(repr(data.outb), 'a la conexión', data.connid)
             sent = sock.send(data.outb)  # Debe estar ready to write
             data.outb = data.outb[sent:]
 

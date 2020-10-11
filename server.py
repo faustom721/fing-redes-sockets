@@ -4,6 +4,7 @@ import selectors
 import socket
 import types
 import argparse
+from termcolor import colored
  
 arg_parser = argparse.ArgumentParser(description='Server grupo 67.')
 arg_parser.add_argument('-p','--port', help='Puerto de escucha.', required=True)
@@ -17,7 +18,7 @@ PORT = int(args.port) # Listening port
 
 def accept_wrapper(lis_socket):
     conn, addr = lis_socket.accept() # conn es la nueva conexión (socket) para este nuevo cliente
-    print('Conexión aceptada desde', addr)
+    print(colored('Conexión aceptada desde ' + str(addr), 'green'))
     conn.setblocking(False) # El listening socket (lis_socket) debe seguir ready to read, por eso ponemos este nuevo en non-blocking. Así no tranca el (los) otro(s)
     data = types.SimpleNamespace(addr=addr, inb=b'', outb=b'')
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
@@ -31,7 +32,7 @@ def service_connection(key, mask):
         if recv_data:
             data.outb += recv_data
         else:
-            print('Cerrando conexión a', data.addr)
+            print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
             socket.close()
     if mask & selectors.EVENT_WRITE:
