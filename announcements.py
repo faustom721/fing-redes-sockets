@@ -32,7 +32,7 @@ def start_announcements_server(application_port):
         events = sel.select(timeout=None) # Bloquea hasta que un socket registrado esté listo para leer/escribir
         data, addr = sock.recvfrom(1024)
         if data:
-            print("Recibiendo anuncios de : ", addr)
+            print("Recibiendo anuncios de:", addr)
 
 
 def send_announcements(socket, application_port, announcements):
@@ -71,8 +71,6 @@ def start_announcements_client(application_port):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-    # Habilitando reuso del socket
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     # Habilitando modo broadcasting
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
