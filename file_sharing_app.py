@@ -17,5 +17,5 @@ print("***********************************************")
 HOST = '127.0.0.1' 
 PORT = int(args.port) # Listening port
 
-start_announcements_client(PORT, 1) #TODO: interval correcto
+start_announcements_client(PORT)
 start_announcements_server(PORT)
