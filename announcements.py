@@ -30,7 +30,7 @@ def start_announcements_server(application_port):
     # Event loop
     while True:
         events = sel.select(timeout=None) # Bloquea hasta que un socket registrado esté listo para leer/escribir
-        data, addr = sock.recvfrom(1024) #sticks here forever!
+        data, addr = sock.recvfrom(1024)
         if data:
             print("Recibiendo anuncios de : ", addr)
 
