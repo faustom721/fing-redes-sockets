@@ -13,7 +13,6 @@ def start_announcements_server(application_port):
     """
     Recibe los anuncios de archivos, los procesa y responde.
     """
-    print("hola soy el server")
     sel = selectors.DefaultSelector()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -31,10 +30,9 @@ def start_announcements_server(application_port):
     # Event loop
     while True:
         events = sel.select(timeout=None) # Bloquea hasta que un socket registrado esté listo para leer/escribir
-        # data, addr = sock.recv(1024)
-        # for key, mask in events:
-        #     print(mask)
-        print(colored('Anuncio recibido!', 'green'))
+        data, addr = sock.recvfrom(1024) #sticks here forever!
+        if data:
+            print("Recibiendo anuncios de : ", addr)
 
 
 def send_announcements(socket, application_port, announcements):
@@ -80,3 +78,4 @@ def start_announcements_client(application_port):
 
     announce_forever = AnnounceForever(b'ANUNCIOS')
     announce_forever.start(sock, application_port, 1) #TODO: poner interval correcto 30s
+    announce_forever.set_announcements(b'ANUNCIOS ACTUALIZADOS')
