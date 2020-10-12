@@ -5,6 +5,9 @@ import selectors
 import types
 import time
 from termcolor import colored
+from threading import Timer
+import atexit
+
 
 def start_announcements_server(application_port):
     """
@@ -34,14 +37,32 @@ def start_announcements_server(application_port):
         print(colored('Anuncio recibido!', 'green'))
 
 
-def send_announcement(socket, application_port, message):
-    socket.sendto(message, ("<broadcast>", application_port))
-    print(colored('Anunciando!', 'blue'))
+def send_announcements(socket, application_port, announcements):
+    if announcements:
+        socket.sendto(announcements, ("<broadcast>", application_port))
+        print(colored('Anunciando!', 'blue'))
+    else:
+        print(colored('announcements es None', 'red'))
 
 
-def announcements_forever(socket, application_port, message):
-    # TODO: hacer send_announcement cada 30 segundos
+class AnnounceForever(object):
+    def __init__(self, announcements = None): 
+        self._announcements = announcements
 
+    def get_announcements(self): 
+        return self._announcements 
+
+    def set_announcements(self, x): 
+        self._announcements = x
+
+    def start(self, socket, application_port, interval):
+        # Anunciamos
+        send_announcements(socket, application_port, self._announcements)
+        # Armamos timer que se llama recursivamente cada interval segundos
+        timer = Timer(interval, AnnounceForever.start, (self, socket, application_port, interval))
+        # Registramos timer.cancel para poder parar el timer cuando el intérprete pare
+        atexit.register(timer.cancel)
+        timer.start()
 
 
 def start_announcements_client(application_port):
@@ -50,16 +71,12 @@ def start_announcements_client(application_port):
     Hace pedidos de anuncios
     """
 
-    sel = selectors.DefaultSelector()
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setblocking(False)
 
     # Habilitando reuso del socket
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     # Habilitando modo broadcasting
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-    message = b'ANUNCIO'
-
-    announcements_forever(sock, application_port, message)
+    announce_forever = AnnounceForever(b'ANUNCIOS')
+    announce_forever.start(sock, application_port, 1) #TODO: poner interval correcto 30s
