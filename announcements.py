@@ -9,7 +9,7 @@ from threading import Timer
 import atexit
 
 
-def start_announcements_server(application_port):
+def start_announcements_server(host_ip, application_port):
     """
     Recibe los anuncios de archivos, los procesa y responde.
     """
@@ -22,7 +22,7 @@ def start_announcements_server(application_port):
     # Habilitando modo broadcasting
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-    sock.bind(('', application_port))
+    sock.bind((host_ip, application_port))
     sock.setblocking(False)
     events = selectors.EVENT_READ
     sel.register(sock, events, data=None)
@@ -30,9 +30,13 @@ def start_announcements_server(application_port):
     # Event loop
     while True:
         events = sel.select(timeout=None) # Bloquea hasta que un socket registrado esté listo para leer/escribir
-        data, addr = sock.recvfrom(1024)
-        if data:
-            print("Recibiendo anuncios de:", addr)
+        # data, addr = sock.recvfrom(1024)
+        # if data:
+        #     if str(sock.type) == "SocketKind.SOCK_DGRAM":
+        #         print("jsuuaj")
+        #     print(data)
+        #     print("Recibiendo anuncios de:", addr)
+        print("mal")
 
 
 def send_announcements(socket, application_port, announcements):

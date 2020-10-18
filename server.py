@@ -41,7 +41,6 @@ def service_connection(key, mask):
             sent = socket.send(data.outb)  # Debe estar ready to write
             data.outb = data.outb[sent:]
 
-
 sel = selectors.DefaultSelector()
 
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,8 +55,9 @@ while True:
     events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
     for key, mask in events:
         if key.data is None:
+            pass
             # Sabemos que es el listening socket, entonces aceptamos la conexión registrando un nuevo socket en el selector
-            accept_wrapper(key.fileobj) # key.fileobj es nuestro listening socket
+            #accept_wrapper(key.fileobj) # key.fileobj es nuestro listening socket
         else:
             # Como hay data sabemos que es de un socket cliente ya aceptado, entonces servimos
             service_connection(key, mask)
