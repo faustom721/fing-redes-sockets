@@ -12,15 +12,21 @@ TELNET_PORT = 2025
 
 sel = selectors.DefaultSelector()
 
+# Sockets creados para atender conexiones telnet
+telnet_connections = []
+
 # start_announcements_client(PORT)
 # start_announcements_server(HOST, PORT)
 
-def accept_wrapper(listening_socket):
+def accept_wrapper(key):
+    listening_socket = key.fileobj
     conn, addr = listening_socket.accept() # conn es la nueva conexión (socket) para este nuevo cliente
+    if key == telnet_selectorkey:
+        telnet_connections.append(conn)
     print(colored('Conexión aceptada desde ' + str(addr), 'green'))
     conn.setblocking(False) # El listening socket debe seguir ready to read, por eso ponemos este nuevo en non-blocking. Así no tranca el (los) otro(s)
     data = types.SimpleNamespace(addr=addr, inb=b'', outb=b'')
-    events = selectors.EVENT_READ | selectors.EVENT_WRITE
+    events = selectors.EVENT_READ
     sel.register(conn, events, data=data)
 
 def service_connection(key, mask):
@@ -35,6 +41,7 @@ def service_connection(key, mask):
             print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
             socket.close()
+            telnet_connections.remove(socket)
 
     if mask & selectors.EVENT_WRITE:
         print("listo pa escribir")
@@ -45,6 +52,14 @@ def service_connection(key, mask):
         
 
 # Seteamos listening socket TCP de la aplicación. Para solicitudes de conexión.
+telnet_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+telnet_sock.bind((HOST, TELNET_PORT))
+telnet_sock.listen()
+print('Esperando telnet en', (HOST, TELNET_PORT))
+telnet_sock.setblocking(False)
+telnet_selectorkey = sel.register(telnet_sock, selectors.EVENT_READ, data=None)
+
+# Socket TCP para atender telnet
 L_TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 L_TCP.bind((HOST, PORT))
 L_TCP.listen()
@@ -78,14 +93,20 @@ while True:
             print(colored("UDP", "yellow"))
 
         # TCP de escucha
-        if key == tcp_selectorkey:
+        if key in [tcp_selectorkey, telnet_selectorkey]:
             print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
-            accept_wrapper(key.fileobj)
+            accept_wrapper(key)       
+
         else:
-            print(colored("data TCP", "yellow"))
-            # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos
-            service_connection(key, mask)
+            # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
+            if key.fileobj in telnet_connections:
+                print(colored("Data Telnet", "yellow"))
+                service_connection(key, mask)
+            else:
+                print(colored("Data TCP", "yellow"))
+                print(key)
+                service_connection(key, mask)
 
     # lap += 1
     # if lap == 3: 
