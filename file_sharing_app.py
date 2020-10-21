@@ -5,6 +5,7 @@ import socket
 import types
 from termcolor import colored
 from announcements import start_announcements_client, start_announcements_server
+import telnet
 
 HOST = '0.0.0.0'
 PORT = 2020 # Listening port
@@ -29,25 +30,27 @@ def accept_wrapper(key):
     events = selectors.EVENT_READ
     sel.register(conn, events, data=data)
 
-def service_connection(key, mask):
+def service_connection_telnet(key, mask):
     socket = key.fileobj
     data = key.data
     if mask & selectors.EVENT_READ:
         recv_data = socket.recv(1024)  # Debe estar ready to read
         if recv_data:
-            data.outb += recv_data
-            print(recv_data)
+            response = telnet.parse_message(recv_data).encode('utf-8')
+            response += b'\r\n'
+            sent = socket.send(response)  # Debe estar ready to write
+            data.outb = data.outb[sent:]
         else:
             print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
             socket.close()
             telnet_connections.remove(socket)
 
+    # En desuso
     if mask & selectors.EVENT_WRITE:
-        print("listo pa escribir")
         if data.outb:
             print('Enviando', repr(data.outb), 'a', data.addr)
-            sent = socket.send(data.outb)  # Debe estar ready to write
+            sent = socket.send(b'cosos')  # Debe estar ready to write
             data.outb = data.outb[sent:]
         
 
@@ -102,11 +105,10 @@ while True:
             # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
             if key.fileobj in telnet_connections:
                 print(colored("Data Telnet", "yellow"))
-                service_connection(key, mask)
+                service_connection_telnet(key, mask)
             else:
                 print(colored("Data TCP", "yellow"))
-                print(key)
-                service_connection(key, mask)
+                service_connection_telnet(key, mask) # TODO cambiar a un nuevo service_connection
 
     # lap += 1
     # if lap == 3: 
