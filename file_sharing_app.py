@@ -11,6 +11,9 @@ HOST = '0.0.0.0'
 PORT = 2020 # Listening port
 TELNET_PORT = 2025
 
+lista_archivos_locales = {}
+lista_archivos_remotos = {}
+
 sel = selectors.DefaultSelector()
 
 # Sockets creados para atender conexiones telnet
@@ -115,3 +118,14 @@ while True:
     #     break
     #     sel.unregister(key.fileobj)
     #     key.fileobj.close()
+
+
+    class class_archivo:
+    def __init__(self, nombre, tamanio, md5, host):
+        self.nombre = nombre
+        self.tamanio = tamanio
+        self.md5 = md5
+
+    str_data = data.decode(encoding="ascii") #Decodifico los bytes
+    sizefile = sys.getsizeof(data) #Devuelve el tamaño del archivo en bytes
+    md5 = hashlib.md5(str_data) #Calcula el md5
