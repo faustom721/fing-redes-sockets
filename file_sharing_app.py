@@ -11,15 +11,12 @@ HOST = '0.0.0.0'
 PORT = 2020 # Listening port
 TELNET_PORT = 2025
 
-lista_archivos_locales = {}
-lista_archivos_remotos = {}
-
 sel = selectors.DefaultSelector()
 
 # Sockets creados para atender conexiones telnet
 telnet_connections = []
 
-# start_announcements_client(PORT)
+start_announcements_client(PORT)
 # start_announcements_server(HOST, PORT)
 
 def accept_wrapper(key):
@@ -34,6 +31,23 @@ def accept_wrapper(key):
     sel.register(conn, events, data=data)
 
 def service_connection_telnet(key, mask):
+    socket = key.fileobj
+    data = key.data
+    if mask & selectors.EVENT_READ:
+        recv_data = socket.recv(1024)  # Debe estar ready to read
+        if recv_data:
+            response = telnet.parse_message(recv_data).encode('utf-8')
+            response += b'\r\n'
+            sent = socket.send(response)  # Debe estar ready to write
+            data.outb = data.outb[sent:]
+        else:
+            print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
+            sel.unregister(socket)
+            socket.close()
+            telnet_connections.remove(socket)
+
+
+def service_connection(key, mask):
     socket = key.fileobj
     data = key.data
     if mask & selectors.EVENT_READ:
@@ -102,7 +116,7 @@ while True:
         if key in [tcp_selectorkey, telnet_selectorkey]:
             print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
-            accept_wrapper(key)       
+            accept_wrapper(key)   
 
         else:
             # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
@@ -111,21 +125,10 @@ while True:
                 service_connection_telnet(key, mask)
             else:
                 print(colored("Data TCP", "yellow"))
-                service_connection_telnet(key, mask) # TODO cambiar a un nuevo service_connection
+                service_connection(key, mask) # TODO cambiar a un nuevo service_connection
 
     # lap += 1
     # if lap == 3: 
     #     break
     #     sel.unregister(key.fileobj)
     #     key.fileobj.close()
-
-
-    class class_archivo:
-    def __init__(self, nombre, tamanio, md5, host):
-        self.nombre = nombre
-        self.tamanio = tamanio
-        self.md5 = md5
-
-    str_data = data.decode(encoding="ascii") #Decodifico los bytes
-    sizefile = sys.getsizeof(data) #Devuelve el tamaño del archivo en bytes
-    md5 = hashlib.md5(str_data) #Calcula el md5
