@@ -61,8 +61,8 @@ class AnnounceForever(object):
 
     def set_announcements(self): 
         ann = 'ANNOUNCE\n'
-        for file_hash, fileobj in local_files.items():
-            ann += f'{fileobj.name}\t{fileobj.size}\t{fileobj.md5}\n'
+        for file_hash, app_file in local_files.items():
+            ann += f'{app_file.name}\t{app_file.size}\t{app_file.md5}\n'
         ann = ann.encode('utf-8')
         self._announcements = ann
 

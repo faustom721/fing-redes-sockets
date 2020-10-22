@@ -7,7 +7,7 @@ import hashlib
 from announcements import local_files, announce_forever
 
 
-class fileobj:
+class app_file:
     def __init__(self, name, size, md5):
         self.name = name
         self.size = size
@@ -51,7 +51,7 @@ def parse_message(message):
 
             file_hash = file_hash.hexdigest()
 
-            aux_file = fileobj(filename, sizefile, file_hash)
+            aux_file = app_file(filename, sizefile, file_hash)
 
             # Guardamos el archivo en nuestro diccionario de seguimiento local
             local_files.setdefault(

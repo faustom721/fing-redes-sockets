@@ -110,12 +110,14 @@ while True:
             data = key.fileobj.recv(1024)
             #Pasamos data que llega al parser de UDP para ver si son anuncios o qué.
             print(colored("UDP", "yellow"))
+            data, addr = key.fileobj.recvfrom(1024)
+            print("Recibiendo anuncios de:", addr)
 
         # TCP de escucha
         if key in [tcp_selectorkey, telnet_selectorkey]:
             print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
-            accept_wrapper(key)   
+            accept_wrapper(key)
 
         else:
             # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
@@ -124,7 +126,7 @@ while True:
                 service_connection_telnet(key, mask)
             else:
                 print(colored("Data TCP", "yellow"))
-                service_connection(key, mask) # TODO cambiar a un nuevo service_connection
+                service_connection(key, mask)
 
     # lap += 1
     # if lap == 3: 
