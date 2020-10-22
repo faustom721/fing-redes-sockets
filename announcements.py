@@ -9,8 +9,8 @@ from threading import Timer
 import atexit
 
 
-lista_archivos_locales = {}
-lista_archivos_remotos = {}
+local_files = {}
+remote_files = {}
 
 
 def start_announcements_server(host_ip, application_port):
@@ -61,8 +61,8 @@ class AnnounceForever(object):
 
     def set_announcements(self): 
         ann = 'ANNOUNCE\n'
-        for file_hash, archivo in lista_archivos_locales.items():
-            ann += f'{archivo.nombre}\t{archivo.tamanio}\t{archivo.md5}\n'
+        for file_hash, fileobj in local_files.items():
+            ann += f'{fileobj.name}\t{fileobj.size}\t{fileobj.md5}\n'
         ann = ann.encode('utf-8')
         self._announcements = ann
 

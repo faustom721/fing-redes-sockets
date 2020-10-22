@@ -4,17 +4,17 @@ from termcolor import colored
 import re
 import os
 import hashlib
-from announcements import lista_archivos_locales, announce_forever
+from announcements import local_files, announce_forever
 
 
-class archivo:
-    def __init__(self, nombre, tamanio, md5):
-        self.nombre = nombre
-        self.tamanio = tamanio
+class fileobj:
+    def __init__(self, name, size, md5):
+        self.name = name
+        self.size = size
         self.md5 = md5
 
     # def __str__(self):
-    #     f'{str(self.nombre)} - {str(self.tamanio)} - {str(self.md5)}'
+    #     f'{str(self.name)} - {str(self.size)} - {str(self.md5)}'
 
 
 def parse_message(message):
@@ -51,16 +51,16 @@ def parse_message(message):
 
             file_hash = file_hash.hexdigest()
 
-            aux_file = archivo(filename, sizefile, file_hash)
+            aux_file = fileobj(filename, sizefile, file_hash)
 
             # Guardamos el archivo en nuestro diccionario de seguimiento local
-            lista_archivos_locales.setdefault(
+            local_files.setdefault(
                 file_hash, aux_file
             )
 
             # TODO: Cuando el archivo no existe
 
-            print(lista_archivos_locales)
+            print(local_files)
 
             # Una vez actualizada la lista de archivos locales, mandamos a actualizar los anuncios
             announce_forever.set_announcements()

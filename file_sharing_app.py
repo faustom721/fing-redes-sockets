@@ -19,6 +19,7 @@ telnet_connections = []
 start_announcements_client(PORT)
 # start_announcements_server(HOST, PORT)
 
+
 def accept_wrapper(key):
     listening_socket = key.fileobj
     conn, addr = listening_socket.accept() # conn es la nueva conexión (socket) para este nuevo cliente
@@ -29,6 +30,7 @@ def accept_wrapper(key):
     data = types.SimpleNamespace(addr=addr, inb=b'', outb=b'')
     events = selectors.EVENT_READ
     sel.register(conn, events, data=data)
+
 
 def service_connection_telnet(key, mask):
     socket = key.fileobj
@@ -53,21 +55,18 @@ def service_connection(key, mask):
     if mask & selectors.EVENT_READ:
         recv_data = socket.recv(1024)  # Debe estar ready to read
         if recv_data:
-            response = telnet.parse_message(recv_data).encode('utf-8')
-            response += b'\r\n'
-            sent = socket.send(response)  # Debe estar ready to write
-            data.outb = data.outb[sent:]
+            data.outb += recv_data
+            print(recv_data)
         else:
             print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
             socket.close()
-            telnet_connections.remove(socket)
 
-    # En desuso
     if mask & selectors.EVENT_WRITE:
+        print("listo pa escribir")
         if data.outb:
             print('Enviando', repr(data.outb), 'a', data.addr)
-            sent = socket.send(b'cosos')  # Debe estar ready to write
+            sent = socket.send(data.outb)  # Debe estar ready to write
             data.outb = data.outb[sent:]
         
 
