@@ -32,7 +32,7 @@ def parse_message(message):
 
     # Mandó offer?
     else:
-        offer = re.match(r'offer <(.*)>', msg)
+        offer = re.match(r'offer (.*)\r', msg)
         if offer:
             filename = offer[1]         
 
@@ -70,7 +70,7 @@ def parse_message(message):
 
         # Mandó get?
         else:
-            get = re.match(r'get <(\d*)>', msg)
+            get = re.match(r'get (\d*)\r', msg)
             if get:
                 fileid = get[1]
                 return f'INICIANDO DESCARGA DEL ARCHIVO {fileid}'
