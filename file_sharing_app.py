@@ -6,6 +6,7 @@ import types
 from termcolor import colored
 from announcements import start_announcements_client, start_announcements_server
 import telnet
+import time
 
 HOST = '0.0.0.0'
 PORT = 2020 # Listening port
@@ -15,9 +16,6 @@ sel = selectors.DefaultSelector()
 
 # Sockets creados para atender conexiones telnet
 telnet_connections = []
-
-start_announcements_client(PORT)
-# start_announcements_server(HOST, PORT)
 
 
 def accept_wrapper(key):
@@ -94,9 +92,11 @@ L_UDP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 L_UDP.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 L_UDP.bind((HOST, PORT))
 print('Escuchando UDP en', (HOST, PORT))
-L_UDP.setblocking(False)
+# L_UDP.setblocking(False)
 events = selectors.EVENT_READ
 udp_selectorkey = sel.register(L_UDP, events, data=None)
+
+start_announcements_client(L_UDP, PORT)
 
 lap=0
 
@@ -105,6 +105,7 @@ while True:
     events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
     print("------------------------")
     for key, mask in events:
+
         # UDP de escucha
         if key == udp_selectorkey:
             data = key.fileobj.recv(1024)
@@ -114,7 +115,7 @@ while True:
             print("Recibiendo anuncios de:", addr)
 
         # TCP de escucha
-        if key in [tcp_selectorkey, telnet_selectorkey]:
+        elif key in [tcp_selectorkey, telnet_selectorkey]:
             print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
             accept_wrapper(key)

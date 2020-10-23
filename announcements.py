@@ -45,9 +45,9 @@ def start_announcements_server(host_ip, application_port):
 
 def send_announcements(socket, application_port, announcements):
     if announcements:
-        socket.sendto(announcements, ("<broadcast>", application_port))
+        sent = socket.sendto(announcements, ("<broadcast>", application_port))
         print(colored('Anunciando!', 'blue'))
-        print(announce_forever.get_announcements())
+        print(sent)
     else:
         print(colored('announcements es None', 'red'))
 
@@ -78,15 +78,10 @@ class AnnounceForever(object):
 
 announce_forever = AnnounceForever()
 
-def start_announcements_client(application_port):
+def start_announcements_client(sock, application_port):
     """
     Hace los anuncios de archivos recurrentemente.
     Hace pedidos de anuncios
     """
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-
-    # Habilitando modo broadcasting
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     
-    announce_forever.start(sock, application_port, 5) #TODO: poner interval correcto 30s
+    announce_forever.start(sock, application_port, 2) #TODO: poner interval correcto 30s

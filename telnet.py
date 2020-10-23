@@ -34,38 +34,37 @@ def parse_message(message):
     else:
         offer = re.match(r'offer (.*)\r', msg)
         if offer:
-            filename = offer[1]         
+            filename = offer[1]       
 
-            file_url = os.getcwd() + "/files/" + filename
-            sizefile = os.path.getsize(file_url)
-   
-            # Calcula el md5
-            with open(file_url, "rb") as f:
-                file_hash = hashlib.md5()
-                chunk = f.read(8192)
-                while chunk:
-                    file_hash.update(chunk)
+            file_path = os.getcwd() + "/files/" + filename
+
+            if os.path.exists(file_path):
+                sizefile = os.path.getsize(file_path)          
+
+                # Calcula el md5
+                with open(file_path, "rb") as f:
+                    file_hash = hashlib.md5()
                     chunk = f.read(8192)
+                    while chunk:
+                        file_hash.update(chunk)
+                        chunk = f.read(8192)
 
-            print(file_hash.hexdigest())
+                file_hash = file_hash.hexdigest()
 
-            file_hash = file_hash.hexdigest()
+                aux_file = AppFile(filename, sizefile, file_hash)
 
-            aux_file = AppFile(filename, sizefile, file_hash)
+                # Guardamos el archivo en nuestro diccionario de seguimiento local
+                local_files.setdefault(
+                    file_hash, aux_file
+                )
 
-            # Guardamos el archivo en nuestro diccionario de seguimiento local
-            local_files.setdefault(
-                file_hash, aux_file
-            )
+                # Una vez actualizada la lista de archivos locales, mandamos a actualizar los anuncios
+                announce_forever.set_announcements()
 
-            # TODO: Cuando el archivo no existe
+                return 'ARCHIVO AGREGADO'
 
-            print(local_files)
-
-            # Una vez actualizada la lista de archivos locales, mandamos a actualizar los anuncios
-            announce_forever.set_announcements()
-
-            return 'ARCHIVO AGREGADO'
+            else:
+                return 'ARCHIVO NO ENCONTRADO'
 
 
         # Mandó get?
