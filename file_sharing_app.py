@@ -106,17 +106,23 @@ tfd.settime(3,10)
 
 timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
 
-lap=0
+timer_lap=0
 
 # Event loop
 while True:
     events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
     print("------------------------")
     for key, mask in events:
-
+        
+        # Llegó timer
         if key == timer_selectorkey:
             announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             tfd.read()
+
+            timer_lap += 1
+            if timer_lap % 3 == 0:
+                # hay que purgar archivos remotos
+           
 
         # UDP de escucha
         elif key == udp_selectorkey:
@@ -139,9 +145,3 @@ while True:
             else:
                 print(colored("Data TCP", "yellow"))
                 service_connection(key, mask)
-
-    # lap += 1
-    # if lap == 3: 
-    #     break
-    #     sel.unregister(key.fileobj)
-    #     key.fileobj.close()
