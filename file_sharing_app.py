@@ -122,7 +122,7 @@ while True:
             timer_lap += 1
             if timer_lap % 3 == 0:
                 # hay que purgar archivos remotos
-           
+                print("purga")
 
         # UDP de escucha
         elif key == udp_selectorkey:
@@ -131,14 +131,16 @@ while True:
             data, addr = key.fileobj.recvfrom(1024)
             print("Recibiendo anuncios de:", addr)
 
+
         # TCP de escucha
         elif key in [tcp_selectorkey, telnet_selectorkey]:
             print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
             accept_wrapper(key)
 
+
+        # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
         else:
-            # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
             if key.fileobj in telnet_connections:
                 print(colored("Data Telnet", "yellow"))
                 service_connection_telnet(key, mask)
