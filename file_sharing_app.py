@@ -4,9 +4,10 @@ import selectors
 import socket
 import types
 from termcolor import colored
-from announcements import start_announcements_client, start_announcements_server
+from announcements import announce_forever
 import telnet
 import time
+import linuxfd
 
 HOST = '0.0.0.0'
 PORT = 2020 # Listening port
@@ -96,7 +97,14 @@ print('Escuchando UDP en', (HOST, PORT))
 events = selectors.EVENT_READ
 udp_selectorkey = sel.register(L_UDP, events, data=None)
 
-start_announcements_client(L_UDP, PORT)
+# start_announcements_client(L_UDP, PORT)
+
+# Timer anuncios
+tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
+# program timer and mask SIGINT
+tfd.settime(3,10)
+
+timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
 
 lap=0
 
@@ -106,9 +114,12 @@ while True:
     print("------------------------")
     for key, mask in events:
 
+        if key == timer_selectorkey:
+            announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
+            tfd.read()
+
         # UDP de escucha
-        if key == udp_selectorkey:
-            data = key.fileobj.recv(1024)
+        elif key == udp_selectorkey:
             #Pasamos data que llega al parser de UDP para ver si son anuncios o qué.
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)

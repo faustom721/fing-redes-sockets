@@ -43,45 +43,27 @@ def start_announcements_server(host_ip, application_port):
         print("mal")
 
 
-def send_announcements(socket, application_port, announcements):
-    if announcements:
-        sent = socket.sendto(announcements, ("<broadcast>", application_port))
-        print(colored('Anunciando!', 'blue'))
-        print(sent)
-    else:
-        print(colored('announcements es None', 'red'))
-
-
 class AnnounceForever(object):
     def __init__(self, announcements = None): 
-        self._announcements = b''
+        self.announcements = b''
 
     def get_announcements(self): 
-        return self._announcements 
+        return self.announcements 
 
     def set_announcements(self): 
         ann = 'ANNOUNCE\n'
         for file_hash, app_file in local_files.items():
             ann += f'{app_file.name}\t{app_file.size}\t{app_file.md5}\n'
         ann = ann.encode('utf-8')
-        self._announcements = ann
+        self.announcements = ann
 
-    def start(self, socket, application_port, interval):
-        # Anunciamos
-        send_announcements(socket, application_port, self._announcements)
-        # Armamos timer que se llama recursivamente cada interval segundos
-        timer = Timer(interval, AnnounceForever.start, (self, socket, application_port, interval))
-        # Registramos timer.cancel para poder parar el timer cuando el intérprete pare
-        atexit.register(timer.cancel)
-        timer.start()
+    def send_announcements(self, socket, application_port):
+        if self.announcements:
+            sent = socket.sendto(self.announcements, ("<broadcast>", application_port))
+            print(colored('Anunciando!', 'blue'))
+            print(sent)
+        else:
+            print(colored('announcements es None', 'red'))
 
 
 announce_forever = AnnounceForever()
-
-def start_announcements_client(sock, application_port):
-    """
-    Hace los anuncios de archivos recurrentemente.
-    Hace pedidos de anuncios
-    """
-    
-    announce_forever.start(sock, application_port, 2) #TODO: poner interval correcto 30s
