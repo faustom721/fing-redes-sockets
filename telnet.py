@@ -7,6 +7,7 @@ import hashlib
 from announcements import local_files, remote_files, announce_forever
 
 
+
 class AppFile:
     def __init__(self, name, size, md5):
         self.name = name
@@ -16,21 +17,27 @@ class AppFile:
     # def __str__(self):
     #     f'{str(self.name)} - {str(self.size)} - {str(self.md5)}'
 
+class RemoteFile:
+    def __init__(self, archivo, indice, lista):
+        self.archivo = archivo
+        self.indice = indice
+        self.lista = lista
+
 def armar_lista():
 
     lista_armada = ""
     for key in remote_files:
 
         num = remote_files[key].indice
-        sizefile = remote_files[key].size
-        name_list = remote_files[key].nombres
+        sizefile = remote_files[key].archivo.size
+        nameIp_list = remote_files[key].lista
         lista_armada += f'{num} {sizefile}'
         primero = True
-        for name in name_list:
+        for name in nameIp_list:
             if primero:
-                lista_armada += f'{name}'
+                lista_armada += f'{name.nombre}'
             else:
-                lista_armada += f',{name}'
+                lista_armada += f',{name.nombre}'
         lista_armada += "/n"
     return lista_armada
 
@@ -43,26 +50,32 @@ def extraer_anuncios(anuncios,ip):
     
     #extraer primer archivo
     #extraer cada campo filename-sizefile-md5
-    archivo = re.match(r'offer (.*)\r', msg)
+    #archivo = re.match(r'offer (.*)\r', anuncios)
+    
+    while anuncios == "":
+        linea = re.match(r'(.*?)\\n', anuncios)
+        if "ANNOUNCE" in linea:
+            msg = ""
+            #Elimino la parte de ANNOUNCE
+        else:
+            archivo = re.match(r'(.*)\\t(.*)\\t(.*)\\n', linea)
+            filename = archivo[1]
+            sizefile = archivo[2]
+            md5 = archivo[3]
 
-    re.u
-
-    #iterar para cada archivo
-    if md5 in remote_files:
-        remote_files[md5].lista.append(ip,filename)
-    else:
-
-        aux_file = AppFile(filename,sizefile,md5)
-        indice = indice_global
-        indice_global = indice_global + 1
-
-        lista = {ip,filename}
-        archivo_remoto = archivo_remoto(aux_file,indice,lista)
-
-        remote_files.setdefault(
-                  
-        md5, archivo_remoto #Con clave md5 agrego el archivo remoto
-                        )
+            if md5 in remote_files:
+                remote_files[md5].lista.append(ip,filename)
+            else:
+                auxFile = AppFile(filename,sizefile,md5)
+                indice = indice_global #no me deja crearlo y usarlo
+                indice_global = indice_global + 1
+                lista = {ip,filename}
+                archivo_remoto = RemoteFile(auxFile,indice,lista)
+                remote_files.setdefault(
+                    md5, archivo_remoto #Con clave md5 agrego el archivo remoto
+                )
+                #Elimino la linea usada
+            
 
 
 def parse_message(message):
@@ -123,3 +136,4 @@ def parse_message(message):
                 return f'INICIANDO DESCARGA DEL ARCHIVO {fileid}'
 
     return 'COMANDO INCORRECTO!'
+
