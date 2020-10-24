@@ -74,6 +74,7 @@ def service_connection(key, mask):
 
 # Seteamos listening socket TCP de la aplicación. Para solicitudes de conexión.
 telnet_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+telnet_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 telnet_sock.bind((HOST, TELNET_PORT))
 telnet_sock.listen()
 print('Esperando telnet en', (HOST, TELNET_PORT))
@@ -115,7 +116,7 @@ while True:
     events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
     print("------------------------")
     for key, mask in events:
-        
+
         # Llegó timer
         if key == timer_selectorkey:
             announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)

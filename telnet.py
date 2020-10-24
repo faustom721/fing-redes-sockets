@@ -6,6 +6,7 @@ import os
 import hashlib
 from announcements import local_files, remote_files, announce_forever
 from datetime import datetime
+from prettytable import PrettyTable
 
 indice_global = 1
 
@@ -39,22 +40,18 @@ class RemoteFile:
         })
 
 def armar_lista():
-
-    lista_armada = ''
-    for key, value in remote_files.items():
+    table = PrettyTable()
+    table.field_names = ['index', 'size', 'names']
+    for value in remote_files.values():
         num = value.indice
         sizefile = value.size
-        locations = value.locations
-        lista_armada += f'{num} {sizefile} '
-        primero = True
-        for ip, tupla in locations.items():
-            if primero:
-                lista_armada += f'{tupla[0]}'
-                primero = False
-            else:
-                lista_armada += f',{tupla[0]}'
-        lista_armada += '/n'
-    return lista_armada
+        tuples = list(value.locations.values())
+
+        names = tuples[0][0]
+        for tupla in tuples[1:]:
+            names += f',{tupla[0]}'
+        table.add_row([num, sizefile, names])
+    return table.get_string()
 
 def procesar_descarga(download):
     download = download.splitlines()
