@@ -100,7 +100,7 @@ def parse_message(message):
     # Mandó list?
     clist = re.match(r'list', msg)
     if clist:
-        return 'TOMA LOS ARCHIVOS'
+        return armar_lista()
 
     # Mandó offer?
     else:
