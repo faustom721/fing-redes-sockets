@@ -32,21 +32,30 @@ class RemoteFile:
 
 def armar_lista():
 
-    lista_armada = ""
+    lista_armada = ''
     for key in remote_files:
-
         num = remote_files[key].indice
-        sizefile = remote_files[key].archivo.size
-        nameIp_list = remote_files[key].lista
+        sizefile = remote_files[key].size
+        locations = remote_files[key].locations
         lista_armada += f'{num} {sizefile}'
         primero = True
-        for name in nameIp_list:
+        for loc in locations:
             if primero:
-                lista_armada += f'{name.nombre}'
+                lista_armada += f'{loc[0]}'
+                primero = False
             else:
-                lista_armada += f',{name.nombre}'
-        lista_armada += "/n"
+                lista_armada += f',{loc[0]}'
+        lista_armada += '/n'
     return lista_armada
+
+def procesar_descarga(download):
+    download = download.splitlines()
+    
+    md5 = download[1]
+    start = download[2]
+    size = download[3]
+
+    remote_files[md5].locations
 
 # (.*)\\n
 
