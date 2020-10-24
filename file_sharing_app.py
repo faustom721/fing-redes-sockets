@@ -102,6 +102,9 @@ udp_selectorkey = sel.register(L_UDP, events, data=None)
 
 # start_announcements_client(L_UDP, PORT)
 
+request = 'REQUEST/n'
+sent = udp_selectorkey.fileobj.sendto(request, ("<broadcast>", PORT))
+
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
 tfd.settime(1,5)
@@ -133,8 +136,12 @@ while True:
             #Pasamos data que llega al parser de UDP para ver si son anuncios o qué.
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
-            print("Recibiendo anuncios de:", addr)
-            telnet.extraer_anuncios(data, addr)
+            dataUDP = data.decode('utf-8')
+            if 'REQUEST' in dataUDP:
+                announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
+            else:
+                print("Recibiendo anuncios de:", addr)
+                telnet.extraer_anuncios(data, addr)
 
 
         # TCP de escucha

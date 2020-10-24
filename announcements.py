@@ -52,14 +52,19 @@ class AnnounceForever(object):
 
     def set_announcements(self): 
         ann = 'ANNOUNCE\n'
+        lista_ann = []
         for file_hash, app_file in local_files.items():
-            ann += f'{app_file.name}\t{app_file.size}\t{app_file.md5}\n'
-        ann = ann.encode('utf-8')
-        self.announcements = ann
+            annAux = f'{app_file.name}\t{app_file.size}\t{app_file.md5}\n'
+            if (len(annAux) + len(ann)) > 1024:
+                lista_ann.append(ann.encode('utf-8'))
+                ann = 'ANNOUNCE\n'
+            ann += annAux
+        self.announcements = lista_ann
 
     def send_announcements(self, socket, application_port):
         if self.announcements:
-            sent = socket.sendto(self.announcements, ("<broadcast>", application_port))
+            for ann in self.announcements:
+                sent = socket.sendto(ann, ("<broadcast>", application_port))
             print(colored('Anunciando!', 'blue'))
             print(sent)
         else:
