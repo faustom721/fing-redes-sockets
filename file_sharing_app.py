@@ -4,7 +4,7 @@ import selectors
 import socket
 import types
 from termcolor import colored
-from announcements import announce_forever
+import announcements
 import telnet
 
 import time
@@ -16,7 +16,7 @@ TELNET_PORT = 2025
 
 sel = selectors.DefaultSelector()
 
-telnet.init()
+announcements.init()
 
 # Sockets creados para atender conexiones telnet
 telnet_connections = []
@@ -101,8 +101,6 @@ print('Escuchando UDP en', (HOST, PORT))
 events = selectors.EVENT_READ
 udp_selectorkey = sel.register(L_UDP, events, data=None)
 
-# start_announcements_client(L_UDP, PORT)
-
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
 tfd.settime(1,5)
@@ -119,7 +117,7 @@ while True:
 
         # Llegó timer
         if key == timer_selectorkey:
-            announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
+            announcements.announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             tfd.read()
 
             timer_lap += 1
@@ -127,6 +125,7 @@ while True:
                 timer_lap = 0
                 # hay que purgar archivos remotos
                 print("purga")
+                announcements.purge_files()
 
 
         # UDP de escucha
@@ -135,7 +134,7 @@ while True:
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
             print("Recibiendo anuncios de:", addr)
-            telnet.extraer_anuncios(data, addr)
+            announcements.read_announcements(data, addr)
 
 
         # TCP de escucha

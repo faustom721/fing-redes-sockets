@@ -8,12 +8,6 @@ from announcements import local_files, remote_files, announce_forever
 from datetime import datetime
 from prettytable import PrettyTable
 
-indice_global = 1
-
-def init():
-    global indice_global
-    indice_global = 1
-
 
 class AppFile:
     def __init__(self, name, size, md5):
@@ -24,12 +18,6 @@ class AppFile:
     # def __str__(self):
     #     f'{str(self.name)} - {str(self.size)} - {str(self.md5)}'
 
-class RemoteFile:
-    def __init__(self, md5, size, indice, locations):
-        self.md5 = md5
-        self.size = size
-        self.indice = indice
-        self.locations = locations # {ip: (namefile, time)}
 
     def __str__(self):
         return str({
@@ -53,6 +41,7 @@ def armar_lista():
         table.add_row([num, sizefile, names])
     return table.get_string()
 
+
 def procesar_descarga(download):
     download = download.splitlines()
     
@@ -61,37 +50,6 @@ def procesar_descarga(download):
     size = download[3]
 
     remote_files[md5].locations
-
-# (.*)\\n
-
-# [ANNOUNCE\\n]?(.*)\\t(.*)\\t(.*)\\n
-
-def extraer_anuncios(anuncios,ip):
-    anuncios = anuncios.decode('utf-8')   
-    anuncios = anuncios.splitlines()
-
-    for anuncio in anuncios[1:]:
-        archivo = re.split(r'\t', anuncio)
-        filename = archivo[0]
-        sizefile = archivo[1]
-        md5 = archivo[2]
-        print('Archivos')
-        for file in remote_files.values():
-            print(file)
-        if md5 not in local_files:
-            if md5 in remote_files:
-                remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
-                print(colored("Archivo actualizado", "green"))
-            else:
-                global indice_global
-                indice = indice_global
-                indice_global = indice_global + 1
-
-                locations = {ip: (filename, datetime.now())}
-
-                remote_file = RemoteFile(md5, sizefile, indice, locations)
-                remote_files[md5] = remote_file
-                print(colored("Archivo nuevo", "green"))
 
 
 def parse_message(message):
