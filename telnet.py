@@ -30,6 +30,14 @@ class RemoteFile:
         self.indice = indice
         self.locations = locations # {ip: (namefile, time)}
 
+    def __str__(self):
+        return str({
+            'md5': self.md5,
+            'size': self.size,
+            'index': self.indice,
+            'locations': self.locations
+        })
+
 def armar_lista():
 
     lista_armada = ''
@@ -70,7 +78,9 @@ def extraer_anuncios(anuncios,ip):
         filename = archivo[0]
         sizefile = archivo[1]
         md5 = archivo[2]
-
+        print('Archivos')
+        for file in remote_files.values():
+            print(file)
         if md5 not in local_files:
             if md5 in remote_files:
                 remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
@@ -80,7 +90,7 @@ def extraer_anuncios(anuncios,ip):
                 indice = indice_global
                 indice_global = indice_global + 1
 
-                locations = {'ip': (filename, datetime.now())}
+                locations = {ip: (filename, datetime.now())}
 
                 remote_file = RemoteFile(md5, sizefile, indice, locations)
                 remote_files[md5] = remote_file
