@@ -4,7 +4,7 @@ from termcolor import colored
 import re
 import os
 import hashlib
-from announcements import local_files, announce_forever
+from announcements import local_files, remote_files, announce_forever
 
 
 class AppFile:
@@ -15,6 +15,54 @@ class AppFile:
 
     # def __str__(self):
     #     f'{str(self.name)} - {str(self.size)} - {str(self.md5)}'
+
+def armar_lista():
+
+    lista_armada = ""
+    for key in remote_files:
+
+        num = remote_files[key].indice
+        sizefile = remote_files[key].size
+        name_list = remote_files[key].nombres
+        lista_armada += f'{num} {sizefile}'
+        primero = True
+        for name in name_list:
+            if primero:
+                lista_armada += f'{name}'
+            else:
+                lista_armada += f',{name}'
+        lista_armada += "/n"
+    return lista_armada
+
+# (.*)\\n
+
+# [ANNOUNCE\\n]?(.*)\\t(.*)\\t(.*)\\n
+
+def extraer_anuncios(anuncios,ip):
+    anuncios = anuncios.decode('utf-8')
+    
+    #extraer primer archivo
+    #extraer cada campo filename-sizefile-md5
+    archivo = re.match(r'offer (.*)\r', msg)
+
+    re.u
+
+    #iterar para cada archivo
+    if md5 in remote_files:
+        remote_files[md5].lista.append(ip,filename)
+    else:
+
+        aux_file = AppFile(filename,sizefile,md5)
+        indice = indice_global
+        indice_global = indice_global + 1
+
+        lista = {ip,filename}
+        archivo_remoto = archivo_remoto(aux_file,indice,lista)
+
+        remote_files.setdefault(
+                  
+        md5, archivo_remoto #Con clave md5 agrego el archivo remoto
+                        )
 
 
 def parse_message(message):

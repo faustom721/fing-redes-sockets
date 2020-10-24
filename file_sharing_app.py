@@ -101,7 +101,6 @@ udp_selectorkey = sel.register(L_UDP, events, data=None)
 
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
-# program timer and mask SIGINT
 tfd.settime(3,10)
 
 timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
@@ -124,12 +123,14 @@ while True:
                 # hay que purgar archivos remotos
                 print("purga")
 
+
         # UDP de escucha
         elif key == udp_selectorkey:
             #Pasamos data que llega al parser de UDP para ver si son anuncios o qué.
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
             print("Recibiendo anuncios de:", addr)
+            telnet.extraer_anuncios(data, addr)
 
 
         # TCP de escucha
