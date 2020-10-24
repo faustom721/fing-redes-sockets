@@ -33,18 +33,18 @@ class RemoteFile:
 def armar_lista():
 
     lista_armada = ''
-    for key in remote_files:
-        num = remote_files[key].indice
-        sizefile = remote_files[key].size
-        locations = remote_files[key].locations
-        lista_armada += f'{num} {sizefile}'
+    for key, value in remote_files.items():
+        num = value.indice
+        sizefile = value.size
+        locations = value.locations
+        lista_armada += f'{num} {sizefile} '
         primero = True
-        for loc in locations:
+        for ip, tupla in locations.items():
             if primero:
-                lista_armada += f'{loc[0]}'
+                lista_armada += f'{tupla[0]}'
                 primero = False
             else:
-                lista_armada += f',{loc[0]}'
+                lista_armada += f',{tupla[0]}'
         lista_armada += '/n'
     return lista_armada
 
