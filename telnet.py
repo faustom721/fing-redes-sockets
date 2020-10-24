@@ -5,7 +5,13 @@ import re
 import os
 import hashlib
 from announcements import local_files, remote_files, announce_forever
+from datetime import datetime
 
+indice_global = 1
+
+def init():
+    global indice_global
+    indice_global = 1
 
 
 class AppFile:
@@ -18,10 +24,11 @@ class AppFile:
     #     f'{str(self.name)} - {str(self.size)} - {str(self.md5)}'
 
 class RemoteFile:
-    def __init__(self, archivo, indice, lista):
-        self.archivo = archivo
+    def __init__(self, md5, size, indice, locations):
+        self.md5 = md5
+        self.size = size
         self.indice = indice
-        self.lista = lista
+        self.locations = locations
 
 def armar_lista():
 
@@ -46,36 +53,31 @@ def armar_lista():
 # [ANNOUNCE\\n]?(.*)\\t(.*)\\t(.*)\\n
 
 def extraer_anuncios(anuncios,ip):
-    anuncios = anuncios.decode('utf-8')
-    
-    #extraer primer archivo
-    #extraer cada campo filename-sizefile-md5
-    #archivo = re.match(r'offer (.*)\r', anuncios)
-    
-    while anuncios == "":
-        linea = re.match(r'(.*?)\\n', anuncios)
-        if "ANNOUNCE" in linea:
-            msg = ""
-            #Elimino la parte de ANNOUNCE
-        else:
-            archivo = re.match(r'(.*)\\t(.*)\\t(.*)\\n', linea)
-            filename = archivo[1]
-            sizefile = archivo[2]
-            md5 = archivo[3]
+    anuncios = anuncios.decode('utf-8')   
+    anuncios = anuncios.splitlines()
+    print(anuncios)
 
-            if md5 in remote_files:
-                remote_files[md5].lista.append(ip,filename)
-            else:
-                auxFile = AppFile(filename,sizefile,md5)
-                indice = indice_global #no me deja crearlo y usarlo
-                indice_global = indice_global + 1
-                lista = {ip,filename}
-                archivo_remoto = RemoteFile(auxFile,indice,lista)
-                remote_files.setdefault(
-                    md5, archivo_remoto #Con clave md5 agrego el archivo remoto
-                )
-                #Elimino la linea usada
-            
+    for anuncio in anuncios[1:]:
+        print(anuncio)
+
+        archivo = re.split(r'\t', anuncio)
+        filename = archivo[0]
+        sizefile = archivo[1]
+        md5 = archivo[2]
+
+        if md5 in remote_files:
+            remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
+            print(colored("Archivo actualizado", "green"))
+        else:
+            global indice_global
+            indice = indice_global
+            indice_global = indice_global + 1
+
+            locations = {'ip': (filename, datetime.now())}
+
+            remote_file = RemoteFile(md5, sizefile, indice, locations)
+            remote_files[md5] = remote_file
+            print(colored("Archivo nuevo", "green"))
 
 
 def parse_message(message):

@@ -6,6 +6,7 @@ import types
 from termcolor import colored
 from announcements import announce_forever
 import telnet
+
 import time
 import linuxfd
 
@@ -14,6 +15,8 @@ PORT = 2020 # Listening port
 TELNET_PORT = 2025
 
 sel = selectors.DefaultSelector()
+
+telnet.init()
 
 # Sockets creados para atender conexiones telnet
 telnet_connections = []
@@ -101,7 +104,7 @@ udp_selectorkey = sel.register(L_UDP, events, data=None)
 
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
-tfd.settime(3,10)
+tfd.settime(1,5)
 
 timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
 
@@ -119,7 +122,8 @@ while True:
             tfd.read()
 
             timer_lap += 1
-            if timer_lap % 3 == 0:
+            if timer_lap == 3:
+                timer_lap = 0
                 # hay que purgar archivos remotos
                 print("purga")
 
