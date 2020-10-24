@@ -28,7 +28,7 @@ class RemoteFile:
         self.md5 = md5
         self.size = size
         self.indice = indice
-        self.locations = locations
+        self.locations = locations # {ip: (namefile, time)}
 
 def armar_lista():
 
@@ -55,29 +55,27 @@ def armar_lista():
 def extraer_anuncios(anuncios,ip):
     anuncios = anuncios.decode('utf-8')   
     anuncios = anuncios.splitlines()
-    print(anuncios)
 
     for anuncio in anuncios[1:]:
-        print(anuncio)
-
         archivo = re.split(r'\t', anuncio)
         filename = archivo[0]
         sizefile = archivo[1]
         md5 = archivo[2]
 
-        if md5 in remote_files:
-            remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
-            print(colored("Archivo actualizado", "green"))
-        else:
-            global indice_global
-            indice = indice_global
-            indice_global = indice_global + 1
+        if md5 not in local_files:
+            if md5 in remote_files:
+                remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
+                print(colored("Archivo actualizado", "green"))
+            else:
+                global indice_global
+                indice = indice_global
+                indice_global = indice_global + 1
 
-            locations = {'ip': (filename, datetime.now())}
+                locations = {'ip': (filename, datetime.now())}
 
-            remote_file = RemoteFile(md5, sizefile, indice, locations)
-            remote_files[md5] = remote_file
-            print(colored("Archivo nuevo", "green"))
+                remote_file = RemoteFile(md5, sizefile, indice, locations)
+                remote_files[md5] = remote_file
+                print(colored("Archivo nuevo", "green"))
 
 
 def parse_message(message):
@@ -117,9 +115,7 @@ def parse_message(message):
                 aux_file = AppFile(filename, sizefile, file_hash)
 
                 # Guardamos el archivo en nuestro diccionario de seguimiento local
-                local_files.setdefault(
-                    file_hash, aux_file
-                )
+                local_files[file_hash] = aux_file
 
                 # Una vez actualizada la lista de archivos locales, mandamos a actualizar los anuncios
                 announce_forever.set_announcements()
