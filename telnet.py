@@ -65,7 +65,7 @@ def process_file_chunk(sock, chunk):
 
     ready = 0
     total_connections = len(download_manager[1])
-    
+
     for connection in download_manager[1].values():
         if connection[2]:
             ready += 1
