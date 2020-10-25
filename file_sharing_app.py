@@ -100,8 +100,8 @@ udp_selectorkey = sel.register(L_UDP, events, data=None)
 
 # start_announcements_client(L_UDP, PORT)
 
-request = 'REQUEST/n'
-sent = udp_selectorkey.fileobj.sendto(request, ("<broadcast>", PORT))
+request = b'REQUEST\n'
+sent = L_UDP.sendto(request, ("<broadcast>", PORT))
 
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
@@ -138,7 +138,7 @@ while True:
 
             dataUDP = data.decode('utf-8')
             if 'REQUEST' in dataUDP:
-                announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
+                announcements.announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             else:
                 print("Recibiendo anuncios de:", addr)
                 announcements.read_announcements(data, addr[0])
