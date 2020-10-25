@@ -48,7 +48,6 @@ def read_announcements(anuncios, ip):
         if md5 not in local_files:
             if md5 in remote_files:
                 remote_files[md5].locations[ip] = (filename, datetime.now()) # Actualizamos el remotefile conforme al nuevo anuncio
-                print(colored("Archivo actualizado", "green"))
             else:
                 global indice_global
                 indice = indice_global

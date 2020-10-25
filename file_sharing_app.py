@@ -62,6 +62,7 @@ def service_connection(key, mask):
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
                 send_msg(socket, response)
+                print("Chunk enviado a " + str(socket.raddr))
             else:
                 download_manager = telnet.process_file_chunk(socket, data)
                 sel.unregister(socket)
