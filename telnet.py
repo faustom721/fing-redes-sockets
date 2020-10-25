@@ -43,8 +43,8 @@ def process_download(download):
     download = download.splitlines()
     
     md5 = download[1]
-    start = download[2]
-    size = download[3]
+    start = int(download[2])
+    size = int(download[3])
 
     filename = local_files[md5].name 
     file_path = os.getcwd() + "/files/" + filename
