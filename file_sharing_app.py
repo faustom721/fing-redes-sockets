@@ -31,7 +31,7 @@ def accept_wrapper(key):
     if key == telnet_selectorkey:
         telnet_connections.append(conn)
     print(colored('Conexión aceptada desde ' + str(addr), 'green'))
-    conn.setblocking(False) # El listening socket debe seguir ready to read, por eso ponemos este nuevo en non-blocking. Así no tranca el (los) otro(s)
+    conn.setblocking(True) # El listening socket debe seguir ready to read, por eso ponemos este nuevo en non-blocking. Así no tranca el (los) otro(s)
     data = types.SimpleNamespace(addr=addr, inb=b'', outb=b'')
     events = selectors.EVENT_READ
     sel.register(conn, events, data=data)
@@ -56,14 +56,13 @@ def service_connection_telnet(key, mask):
 def service_connection(key, mask):
     socket = key.fileobj
     if mask & selectors.EVENT_READ:
-        recv_data = socket.recv(1024)
+        recv_data = recv_msg(socket)
         if recv_data:
-            data = recv_data.decode('utf-8')
+            data = recv_data
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
-                sent = send_msg(socket, response)
+                send_msg(socket, response)
             else:
-                recv_data = recv_msg(socket)
                 download_manager = telnet.process_file_chunk(socket, recv_data)
                 sel.unregister(socket)
                 socket.close()
