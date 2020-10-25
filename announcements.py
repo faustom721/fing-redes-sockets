@@ -75,13 +75,8 @@ def purge_files():
         # Reviso cada location de cada archivo registrado como disponible en la red p2p para ver si se le pasó el tiempo
         for ip, location_data in available_file.locations.items():
             last_signal = location_data[1]
-
-            
-
-            print("DELTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             delta = now - last_signal
             delta = delta.seconds
-            print(delta)
             if delta >= 90:
                 # Hay que borrar al archivo como disponible de los remotos
                 if len(available_file.locations) == 1:
@@ -98,7 +93,7 @@ def purge_files():
 
 
 class AnnounceForever(object):
-    def __init__(self, announcements = None): 
+    def __init__(self, announcements = None):
         self.announcements = b''
 
     def get_announcements(self): 

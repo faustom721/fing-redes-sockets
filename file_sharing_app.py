@@ -43,7 +43,6 @@ def service_connection_telnet(key, mask):
             response = telnet.parse_message(recv_data).encode('utf-8')
             response += b'\r\n'
             sent = socket.send(response)  # Debe estar ready to write
-            data.outb = data.outb[sent:]
         else:
             print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
@@ -57,19 +56,17 @@ def service_connection(key, mask):
     if mask & selectors.EVENT_READ:
         recv_data = socket.recv(1024)  # Debe estar ready to read
         if recv_data:
-            data.outb += recv_data
             print(recv_data)
+            recv_data = recv_data.decode('utf-8')
+            if recv_data.splitlines()[0] == "DOWNLOAD":
+                response = telnet.process_download(recv_data)
+                sent = socket.send(response)  # Debe estar ready to write
+            else:
+                process_file_chunk(socket, recv_data)
         else:
             print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
             sel.unregister(socket)
             socket.close()
-
-    if mask & selectors.EVENT_WRITE:
-        print("listo pa escribir")
-        if data.outb:
-            print('Enviando', repr(data.outb), 'a', data.addr)
-            sent = socket.send(data.outb)  # Debe estar ready to write
-            data.outb = data.outb[sent:]
         
 
 # Seteamos listening socket TCP de la aplicación. Para solicitudes de conexión.
@@ -134,7 +131,7 @@ while True:
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
             print("Recibiendo anuncios de:", addr)
-            announcements.read_announcements(data, addr)
+            announcements.read_announcements(data, addr[0])
 
 
         # TCP de escucha
