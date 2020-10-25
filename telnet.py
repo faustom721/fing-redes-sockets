@@ -47,19 +47,20 @@ def process_download(download):
     size = int(download[3])
 
     filename = local_files[md5].name 
-    file_path = os.getcwd() + "/files/" + filename
+    file_path = os.getcwd() + '/files/' + filename
 
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             f.read(int(start))
             chunk = f.read(int(size))
-        return chunk
+        return 'DOWNLOAD OK\n' + chunk
 
 
 download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved)})
 
 def process_file_chunk(sock, chunk):
     global download_manager
+    chunk = chunk.splitlines()[1]
     download_manager[1][sock][1] = chunk
     download_manager[1][sock][2] = True
 
