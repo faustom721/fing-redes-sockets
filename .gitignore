@@ -7,4 +7,4 @@
 *.pyc
 
 # App files repository
-/files
+/files/*
