@@ -15,14 +15,13 @@ class AppFile:
         self.size = size
         self.md5 = md5
 
-
-
     def __str__(self):
         return str({
             'md5': self.md5,
             'size': self.size,
             'name': self.name
         })
+
 
 def armar_lista():
     table = PrettyTable()
@@ -63,8 +62,15 @@ def process_file_chunk(sock, chunk):
     download_manager[1][sock][1] = chunk
     download_manager[1][sock][2] = True
 
+    ready = 0
+    total_connections = len(download_manager[1])
+    
     for connection in download_manager[1].values():
-        if connection[2] == False:
+        if connection[2] == True:
+            ready += 1
+            state = f'Estado de la descarga {ready} / {total_connections}'
+            print(colored(state, 'cyan'))
+
             return None
     return download_manager
 

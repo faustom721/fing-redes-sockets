@@ -8,6 +8,8 @@ import announcements
 import telnet
 import os
 
+from helpers import send_msg
+
 import time
 import linuxfd
 
@@ -54,14 +56,14 @@ def service_connection_telnet(key, mask):
 def service_connection(key, mask):
     socket = key.fileobj
     if mask & selectors.EVENT_READ:
-        recv_data = socket.recv(1024)  # Debe estar ready to read
+        recv_data = socket.recv_msg(socket)
         if recv_data:
             print(recv_data)
             data = recv_data.decode('utf-8')
             print(data)
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
-                sent = socket.send(response)  # Debe estar ready to write
+                sent = socket_msg(socket, response)
             else:
                 download_manager = telnet.process_file_chunk(socket, recv_data)
                 sel.unregister(socket)
@@ -74,7 +76,7 @@ def service_connection(key, mask):
                         for chunk in chunks:
                             f.write(chunk[1].decode('utf-8'))
         else:
-            print(colored('Cerrando conexión.', 'red' ))
+            print(colored('Cerrando conexión.', 'red'))
             sel.unregister(socket)
             socket.close()
         
