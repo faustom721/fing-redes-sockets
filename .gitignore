@@ -5,3 +5,6 @@
 /.vscode
 
 *.pyc
+
+# App files repository
+/files
