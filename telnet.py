@@ -8,7 +8,7 @@ from announcements import local_files, remote_files, announce_forever
 from prettytable import PrettyTable
 import socket
 import selectors
-from helper import send_msg, recv_msg
+from helpers import send_msg, recv_msg
 
 class AppFile:
     def __init__(self, name, size, md5):
