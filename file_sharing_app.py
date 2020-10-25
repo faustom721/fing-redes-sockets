@@ -58,12 +58,12 @@ def service_connection(key, mask):
     if mask & selectors.EVENT_READ:
         recv_data = recv_msg(socket)
         if recv_data:
-            data = recv_data
+            data = recv_data.decode('utf-8')
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
                 send_msg(socket, response)
             else:
-                download_manager = telnet.process_file_chunk(socket, recv_data)
+                download_manager = telnet.process_file_chunk(socket, data)
                 sel.unregister(socket)
                 socket.close()
                 if download_manager:
@@ -72,7 +72,7 @@ def service_connection(key, mask):
                     with open(file_path, "w") as f:
                         chunks = sorted(list(download_manager[1].values()), key=lambda x: x[0])
                         for chunk in chunks:
-                            f.write(chunk[1].decode('utf-8'))
+                            f.write(chunk[1])
         else:
             print(colored('Cerrando conexión.', 'red'))
             sel.unregister(socket)
