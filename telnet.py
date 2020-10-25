@@ -56,16 +56,16 @@ def process_download(download):
         return chunk
 
 
-download_manager = {} # {socket: (id_chunk, chunk, recieved)}
+download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved)})
 
-def process_file_chunk(sock, data):
+def process_file_chunk(sock, chunk):
     global download_manager
-    chunk = recv_data
-    download_manager[sock][1] = True
+    download_manager[1][sock][1] = chunk
+    download_manager[1][sock][2] = True
 
     ready = True
-    for connection in download_manager.values():
-        if connection[1] == False:
+    for connection in download_manager[1].values():
+        if connection[2] == False:
             ready = False
             return None
     return download_manager
@@ -73,11 +73,12 @@ def process_file_chunk(sock, data):
 
 def request_download(file_id, selector):
     global download_manager
-    download_manager = {} 
     md5 = None
     for value in remote_files.values():
         if value.indice == file_id:
             md5 = value.md5
+            filename = list(locations.values())[0][0]
+            download_manager = (filename, {})
             break
     size = remote_files[md5].size // len(remote_files[md5].locations)
     remaining_data = remote_files[md5].size % len(remote_files[md5].locations)
@@ -92,7 +93,7 @@ def request_download(file_id, selector):
         msg += size + '\n'
         start += size
         index += 1
-        download_manager[sock] = (index, None, False)
+        download_manager[1][sock] = (index, None, False)
         sock = start_connection(ip, selector)
         sock.send(msg.encode('utf-8'))
 
@@ -106,7 +107,7 @@ def start_connection(host, selector):
     sel.register(sock, events, data=None)
     return sock
 
-def parse_message(message):
+def parse_message(message, selector):
     """
     Lee y entiende las peticiones por comando que llegan por telnet
     """
@@ -158,7 +159,8 @@ def parse_message(message):
         else:
             get = re.match(r'get (\d*)\r', msg)
             if get:
-                fileid = get[1]
+                file_id = get[1]
+                request_download(file_id, selector)
                 return f'INICIANDO DESCARGA DEL ARCHIVO {fileid}'
 
     return 'COMANDO INCORRECTO!'

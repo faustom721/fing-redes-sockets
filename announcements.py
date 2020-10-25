@@ -36,6 +36,7 @@ class RemoteFile:
 
 
 def read_announcements(anuncios, ip):
+    
     anuncios = anuncios.splitlines()
 
     for anuncio in anuncios[1:]:
@@ -98,7 +99,7 @@ class AnnounceForever(object):
     def get_announcements(self): 
         return self.announcements 
 
-    def set_announcements(self): 
+    def set_announcements(self):
         ann = 'ANNOUNCE\n'
         lista_ann = []
         for file_hash, app_file in local_files.items():
@@ -107,6 +108,7 @@ class AnnounceForever(object):
                 lista_ann.append(ann.encode('utf-8'))
                 ann = 'ANNOUNCE\n'
             ann += annAux
+        lista_ann.append(ann.encode('utf-8'))            
         self.announcements = lista_ann
 
     def send_announcements(self, socket, application_port):

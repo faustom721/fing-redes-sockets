@@ -40,7 +40,7 @@ def service_connection_telnet(key, mask):
     if mask & selectors.EVENT_READ:
         recv_data = socket.recv(1024)  # Debe estar ready to read
         if recv_data:
-            response = telnet.parse_message(recv_data).encode('utf-8')
+            response = telnet.parse_message(recv_data, sel).encode('utf-8')
             response += b'\r\n'
             sent = socket.send(response)  # Debe estar ready to write
         else:
@@ -52,19 +52,25 @@ def service_connection_telnet(key, mask):
 
 def service_connection(key, mask):
     socket = key.fileobj
-    data = key.data
     if mask & selectors.EVENT_READ:
         recv_data = socket.recv(1024)  # Debe estar ready to read
         if recv_data:
             print(recv_data)
-            recv_data = recv_data.decode('utf-8')
-            if recv_data.splitlines()[0] == "DOWNLOAD":
-                response = telnet.process_download(recv_data)
+            data = recv_data.decode('utf-8')
+            if data.splitlines()[0] == "DOWNLOAD":
+                response = telnet.process_download(data)
                 sent = socket.send(response)  # Debe estar ready to write
             else:
-                process_file_chunk(socket, recv_data)
+                download_manager = telnet.process_file_chunk(socket, recv_data)
+                if download_manager:
+                    # Escribimos el archivo en disco
+                    file_path = os.getcwd() + "/files/" + download_manager[0]
+                    with open(file_path, "w") as f:
+                        chunks = sorted(list(download_manager[1].values()), lambda x:x[0])
+                        for chunk in chunks:
+                            f.write(chunk[1])
         else:
-            print(colored('Cerrando conexión a ' + str(data.addr), 'red' ))
+            print(colored('Cerrando conexión.', 'red' ))
             sel.unregister(socket)
             socket.close()
         
@@ -136,13 +142,12 @@ while True:
             print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
 
-            dataUDP = data.decode('utf-8')
-            if 'REQUEST' in dataUDP:
+            data = data.decode('utf-8')
+            if 'REQUEST' in data:
                 announcements.announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             else:
                 print("Recibiendo anuncios de:", addr)
                 announcements.read_announcements(data, addr[0])
-
 
 
         # TCP de escucha
