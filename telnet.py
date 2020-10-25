@@ -8,6 +8,7 @@ from announcements import local_files, remote_files, announce_forever
 from prettytable import PrettyTable
 import socket
 import selectors
+from helper import send_msg, recv_msg
 
 class AppFile:
     def __init__(self, name, size, md5):
@@ -66,13 +67,16 @@ def process_file_chunk(sock, chunk):
     total_connections = len(download_manager[1])
     
     for connection in download_manager[1].values():
-        if connection[2] == True:
+        if connection[2]:
             ready += 1
-            state = f'Estado de la descarga {ready} / {total_connections}'
-            print(colored(state, 'cyan'))
 
-            return None
-    return download_manager
+    state = f'Estado de la descarga: {ready} / {total_connections}'
+    print(colored(state, 'cyan'))
+
+    if ready == total_connections:
+        return download_manager
+    else:
+        return None
 
 
 def request_download(file_id, selector):
@@ -99,7 +103,7 @@ def request_download(file_id, selector):
         index += 1
         sock = start_connection(ip, selector)
         download_manager[1][sock] = [index, None, False]
-        sock.send(msg.encode('utf-8'))
+        send_msg(sock, msg.encode('UTF-8'))
 
 
 def start_connection(host, selector):
