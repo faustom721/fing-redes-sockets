@@ -5,9 +5,9 @@ import re
 import os
 import hashlib
 from announcements import local_files, remote_files, announce_forever
-from datetime import datetime
 from prettytable import PrettyTable
-
+import socket
+import selectors
 
 class AppFile:
     def __init__(self, name, size, md5):
@@ -51,8 +51,8 @@ def process_download(download):
 
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
-            chunk = f.read(start)
-            chunk = f.read(size)
+            f.read(int(start))
+            chunk = f.read(int(size))
         return chunk
 
 
@@ -63,10 +63,8 @@ def process_file_chunk(sock, chunk):
     download_manager[1][sock][1] = chunk
     download_manager[1][sock][2] = True
 
-    ready = True
     for connection in download_manager[1].values():
         if connection[2] == False:
-            ready = False
             return None
     return download_manager
 
@@ -77,7 +75,7 @@ def request_download(file_id, selector):
     for value in remote_files.values():
         if value.indice == file_id:
             md5 = value.md5
-            filename = list(locations.values())[0][0]
+            filename = list(value.locations.values())[0][0]
             download_manager = (filename, {})
             break
     size = remote_files[md5].size // len(remote_files[md5].locations)
@@ -87,24 +85,23 @@ def request_download(file_id, selector):
     for ip in remote_files[md5].locations.keys():
         msg = 'DOWNLOAD\n'
         msg += md5 + '\n'
-        msg += start + '\n'
+        msg += str(start) + '\n'
         if index == len(remote_files[md5].locations):
             size += remaining_data
-        msg += size + '\n'
+        msg += str(size) + '\n'
         start += size
         index += 1
-        download_manager[1][sock] = (index, None, False)
         sock = start_connection(ip, selector)
+        download_manager[1][sock] = [index, None, False]
         sock.send(msg.encode('utf-8'))
 
 
 def start_connection(host, selector):
     print('Estableciendo conexión para descargar a', (host, 2020))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setblocking(False)
     sock.connect_ex((host, 2020))
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
-    sel.register(sock, events, data=None)
+    selector.register(sock, events, data=None)
     return sock
 
 def parse_message(message, selector):
@@ -129,7 +126,7 @@ def parse_message(message, selector):
             file_path = os.getcwd() + "/files/" + filename
 
             if os.path.exists(file_path):
-                sizefile = os.path.getsize(file_path)          
+                sizefile = int(os.path.getsize(file_path))
 
                 # Calcula el md5
                 with open(file_path, "rb") as f:
@@ -157,11 +154,13 @@ def parse_message(message, selector):
 
         # Mandó get?
         else:
-            get = re.match(r'get (\d*)\r', msg)
+            get = re.match(r'get (\d*)\r\n', msg)
             if get:
-                file_id = get[1]
+                file_id = int(get[1])
+                msg = f'INICIANDO DESCARGA DEL ARCHIVO {file_id}'
+                print(msg)
                 request_download(file_id, selector)
-                return f'INICIANDO DESCARGA DEL ARCHIVO {fileid}'
+                return msg
 
     return 'COMANDO INCORRECTO!'
 

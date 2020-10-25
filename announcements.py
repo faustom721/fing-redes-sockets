@@ -42,7 +42,7 @@ def read_announcements(anuncios, ip):
     for anuncio in anuncios[1:]:
         archivo = re.split(r'\t', anuncio)
         filename = archivo[0]
-        sizefile = archivo[1]
+        sizefile = int(archivo[1])
         md5 = archivo[2]
 
         print('Archivos')

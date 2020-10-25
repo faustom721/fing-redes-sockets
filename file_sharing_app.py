@@ -6,6 +6,7 @@ import types
 from termcolor import colored
 import announcements
 import telnet
+import os
 
 import time
 import linuxfd
@@ -57,18 +58,21 @@ def service_connection(key, mask):
         if recv_data:
             print(recv_data)
             data = recv_data.decode('utf-8')
+            print(data)
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
                 sent = socket.send(response)  # Debe estar ready to write
             else:
                 download_manager = telnet.process_file_chunk(socket, recv_data)
+                sel.unregister(socket)
+                socket.close()
                 if download_manager:
                     # Escribimos el archivo en disco
                     file_path = os.getcwd() + "/files/" + download_manager[0]
                     with open(file_path, "w") as f:
-                        chunks = sorted(list(download_manager[1].values()), lambda x:x[0])
+                        chunks = sorted(list(download_manager[1].values()), key=lambda x: x[0])
                         for chunk in chunks:
-                            f.write(chunk[1])
+                            f.write(chunk[1].decode('utf-8'))
         else:
             print(colored('Cerrando conexión.', 'red' ))
             sel.unregister(socket)
