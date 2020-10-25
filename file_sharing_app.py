@@ -124,7 +124,6 @@ timer_lap=0
 # Event loop
 while True:
     events = sel.select(timeout=None) # Bloquea hasta que un socket registrado tenga lista I/O
-    print("------------------------")
     for key, mask in events:
 
         # Llegó timer
@@ -136,14 +135,13 @@ while True:
             if timer_lap == 3:
                 timer_lap = 0
                 # hay que purgar archivos remotos
-                print("purga")
+                print(colored('Purgando!', 'red'))
                 announcements.purge_files()
 
 
         # UDP de escucha
         elif key == udp_selectorkey:
             #Pasamos data que llega al parser de UDP para ver si son anuncios o qué.
-            print(colored("UDP", "yellow"))
             data, addr = key.fileobj.recvfrom(1024)
 
             data = data.decode('utf-8')
@@ -156,7 +154,6 @@ while True:
 
         # TCP de escucha
         elif key in [tcp_selectorkey, telnet_selectorkey]:
-            print(colored("Data None TCP", "yellow"))
             # Sabemos que es el listening socket de TCP y que es un pedido de conexión nuevo. Entonces aceptamos la conexión registrando un nuevo socket en el selector
             accept_wrapper(key)
 

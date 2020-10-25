@@ -36,7 +36,7 @@ class RemoteFile:
 
 
 def read_announcements(anuncios, ip):
-    
+
     anuncios = anuncios.splitlines()
 
     for anuncio in anuncios[1:]:
@@ -44,10 +44,6 @@ def read_announcements(anuncios, ip):
         filename = archivo[0]
         sizefile = int(archivo[1])
         md5 = archivo[2]
-
-        print('Archivos')
-        for file in remote_files.values():
-            print(file)
 
         if md5 not in local_files:
             if md5 in remote_files:
@@ -63,6 +59,10 @@ def read_announcements(anuncios, ip):
                 remote_file = RemoteFile(md5, sizefile, indice, locations)
                 remote_files[md5] = remote_file
                 print(colored("Archivo nuevo", "green"))
+
+    if len(remote_files) > 0: print(colored('Archivos disponibles', 'blue'))
+    for file in remote_files.values():
+        print(file)
 
 
 def purge_files():
@@ -115,8 +115,7 @@ class AnnounceForever(object):
         if self.announcements:
             for ann in self.announcements:
                 sent = socket.sendto(ann, ("<broadcast>", application_port))
-            print(colored('Anunciando!', 'blue'))
-        else:
-            print(colored('announcements es None', 'red'))
+            print(colored('Anunciando!', 'yellow'))
+
 
 announce_forever = AnnounceForever()
