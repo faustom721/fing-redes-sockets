@@ -8,7 +8,7 @@ import announcements
 import telnet
 import os
 
-from helpers import send_msg
+from helpers import send_msg, recv_msg
 
 import time
 import linuxfd
@@ -56,15 +56,14 @@ def service_connection_telnet(key, mask):
 def service_connection(key, mask):
     socket = key.fileobj
     if mask & selectors.EVENT_READ:
-        recv_data = socket.recv_msg(socket)
+        recv_data = socket.recv(1024)
         if recv_data:
-            print(recv_data)
             data = recv_data.decode('utf-8')
-            print(data)
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
-                sent = socket_msg(socket, response)
+                sent = send_msg(socket, response)
             else:
+                recv_data = recv_msg(socket)
                 download_manager = telnet.process_file_chunk(socket, recv_data)
                 sel.unregister(socket)
                 socket.close()
@@ -165,9 +164,10 @@ while True:
 
         # Sabemos que es de un socket cliente TCP ya aceptado y entonces servimos. Pero hay que ver si es una conexión Telnet
         else:
+            # Data telnet
             if key.fileobj in telnet_connections:
-                print(colored("Data Telnet", "yellow"))
                 service_connection_telnet(key, mask)
+            
+            # Data TCP
             else:
-                print(colored("Data TCP", "yellow"))
                 service_connection(key, mask)
