@@ -62,7 +62,7 @@ def service_connection(key, mask):
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
                 send_msg(socket, response)
-                print("Chunk enviado a " + str(socket.raddr))
+                print("Chunk enviado")
             else:
                 download_manager = telnet.process_file_chunk(socket, data)
                 sel.unregister(socket)
@@ -91,6 +91,7 @@ telnet_selectorkey = sel.register(telnet_sock, selectors.EVENT_READ, data=None)
 
 # Socket TCP para atender telnet
 L_TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+L_TCP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 L_TCP.bind((HOST, PORT))
 L_TCP.listen()
 print('Escuchando TCP en', (HOST, PORT))

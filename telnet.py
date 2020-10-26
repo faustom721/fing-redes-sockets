@@ -46,14 +46,17 @@ def process_download(download):
     start = int(download[2])
     size = int(download[3])
 
-    filename = local_files[md5].name 
-    file_path = os.getcwd() + '/files/' + filename
+    if md5 in local_files:
+        filename = local_files[md5].name
+        file_path = os.getcwd() + '/files/' + filename
 
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            f.read(int(start))
-            chunk = f.read(int(size))
-        return b'DOWNLOAD OK\n' + chunk
+        if os.path.exists(file_path):
+            with open(file_path, "rb") as f:
+                f.read(int(start))
+                chunk = f.read(int(size))
+            return b'DOWNLOAD OK\n' + chunk
+
+    return b'DOWNLOAD FAILURE\n'
 
 
 download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved)})
