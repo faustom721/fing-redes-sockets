@@ -63,7 +63,7 @@ download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved,
 
 def process_file_chunk(sock, chunk):
     global download_manager
-    download_manager[1][sock][1] = chunk[12:]
+    download_manager[1][sock][1].append(chunk[12:])
     download_manager[1][sock][2] -= 1 
 
     ready = 0
@@ -103,10 +103,10 @@ def request_download(file_id, selector):
             size += remaining_data
         msg += str(size) + '\n'
         start += size
-        index += 1
         sock = start_connection(ip, selector)
-        download_manager[1][sock] = [index, None, 1, msg]
+        download_manager[1][sock] = [[index], [], 1, msg]
         send_msg(sock, msg.encode('UTF-8'))
+        index += 1
 
 
 def re_request_download(socket):
@@ -115,6 +115,7 @@ def re_request_download(socket):
     if len(download_manager[1]) > 0:
         new_responsible_sock = min(download_manager[1], key=download_manager[1].get)
         download_manager[1][new_responsible_sock][2] += 1
+        download_manager[1][new_responsible_sock][0].append(conn[0][0])
         send_msg(new_responsible_sock, conn[3].encode('UTF-8')) # Le reasignamos el mensaje que no nos dieron al nuevo
         return True
     else:

@@ -76,7 +76,8 @@ def purge_files():
             last_signal = location_data[1]
             delta = now - last_signal
             delta = delta.seconds
-            if delta >= 90:
+            if delta >= 10:
+                print(colored('Purgando!', 'red'))
                 # Hay que borrar al archivo como disponible de los remotos
                 if len(available_file.locations) == 1:
                     # Era la única disponibilidad remota

@@ -70,18 +70,30 @@ def service_connection(key, mask):
                 success = telnet.re_request_download(socket)
                 if not success:
                     telnet_connections[0].send(b'DESCARGA FALLIDA\n')
+                sel.unregister(socket)
+                socket.close()
 
             else:
                 download_manager = telnet.process_file_chunk(socket, data)
-                sel.unregister(socket)
-                socket.close()
                 if download_manager:
                     # Escribimos el archivo en disco
                     file_path = os.getcwd() + "/files/" + download_manager[0]
+                    conns = []
+                    for conn in download_manager[1].values():
+                        for i in range(len(conn[0])):
+                            conns.append([conn[0][i], conn[1][i]])
+
                     with open(file_path, "w") as f:
-                        chunks = sorted(list(download_manager[1].values()), key=lambda x: x[0])
+                        chunks = sorted(conns, key=lambda x: x[0])
                         for chunk in chunks:
                             f.write(chunk[1])
+                        telnet_connections[0].send(b'DESCARGA EXITOSA\n')
+
+                    # Cerramos conexiones
+                    for sock in download_manager[1].keys():
+                        sel.unregister(sock)
+                        sock.close()
+
         else:
             print(colored('Cerrando conexión.', 'red'))
             sel.unregister(socket)
@@ -129,7 +141,6 @@ tfd.settime(1,5)
 
 timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
 
-timer_lap=0
 
 # Event loop
 while True:
@@ -140,13 +151,7 @@ while True:
         if key == timer_selectorkey:
             announcements.announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             tfd.read()
-
-            timer_lap += 1
-            if timer_lap == 3:
-                timer_lap = 0
-                # hay que purgar archivos remotos
-                print(colored('Purgando!', 'red'))
-                announcements.purge_files()
+            announcements.purge_files()
 
 
         # UDP de escucha
