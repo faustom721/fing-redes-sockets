@@ -131,14 +131,12 @@ print('Escuchando UDP en', (HOST, PORT))
 events = selectors.EVENT_READ
 udp_selectorkey = sel.register(L_UDP, events, data=None)
 
-# start_announcements_client(L_UDP, PORT)
-
 request = b'REQUEST\n'
 sent = L_UDP.sendto(request, ("<broadcast>", PORT))
 
 # Timer anuncios
 tfd = linuxfd.timerfd(rtc=True, nonBlocking=True)
-tfd.settime(1,5)
+tfd.settime(1,30)
 
 timer_selectorkey = sel.register(tfd.fileno(), selectors.EVENT_READ)
 
