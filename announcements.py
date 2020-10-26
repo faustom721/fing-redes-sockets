@@ -1,12 +1,10 @@
 #!./redes2/bin/python
 
-import socket
-import selectors
-import types
 import time
 from termcolor import colored
 import re
 from datetime import datetime
+import random
 
 
 local_files = {}
@@ -113,8 +111,10 @@ class AnnounceForever(object):
 
     def send_announcements(self, socket, application_port):
         if self.announcements:
-            for ann in self.announcements:
-                sent = socket.sendto(ann, ("<broadcast>", application_port))
+            socket.sendto(self.announcements[0], ("<broadcast>", application_port))
+            for ann in self.announcements[1:]:
+                time.sleep(random.randint(1, 5))
+                socket.sendto(ann, ("<broadcast>", application_port))
             print(colored('Anunciando!', 'yellow'))
 
 

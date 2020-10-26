@@ -12,6 +12,7 @@ from helpers import send_msg, recv_msg
 
 import time
 import linuxfd
+import random
 
 HOST = '0.0.0.0'
 PORT = 2020 # Listening port
@@ -161,6 +162,8 @@ while True:
 
             data = data.decode('utf-8')
             if 'REQUEST' in data:
+                # Espera random de hasta 5 segundos
+                time.sleep(random.randint(1, 5))
                 announcements.announce_forever.send_announcements(udp_selectorkey.fileobj, PORT)
             else:
                 print("Recibiendo anuncios de:", addr)
