@@ -56,7 +56,7 @@ def process_download(download):
         return b'DOWNLOAD OK\n' + chunk
 
 
-download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved)})
+download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved, msg)})
 
 def process_file_chunk(sock, chunk):
     global download_manager
@@ -67,7 +67,7 @@ def process_file_chunk(sock, chunk):
     total_connections = len(download_manager[1])
 
     for connection in download_manager[1].values():
-        if connection[2]:
+        if connection[2] == 0:
             ready += 1
 
     state = f'Estado de la descarga: {ready} / {total_connections}'
@@ -102,8 +102,20 @@ def request_download(file_id, selector):
         start += size
         index += 1
         sock = start_connection(ip, selector)
-        download_manager[1][sock] = [index, None, False]
+        download_manager[1][sock] = [index, None, 1, msg]
         send_msg(sock, msg.encode('UTF-8'))
+
+
+def re_request_download(socket):
+    global download_manager
+    conn = download_manager[1].pop(socket) # Eliminamos la conexión del socket del peer que no respondió lo que le pedimos
+    if len(download_manager[1]) > 0:
+        new_responsible_sock = min(download_manager[1], key=download_manager[1].get)
+        download_manager[1][new_responsible_sock][2] += 1
+        send_msg(new_responsible_sock, conn[3].encode('UTF-8')) # Le reasignamos el mensaje que no nos dieron al nuevo
+        return True
+    else:
+        return False
 
 
 def start_connection(host, selector):
@@ -152,6 +164,10 @@ def parse_message(message, selector):
 
                 # Guardamos el archivo en nuestro diccionario de seguimiento local
                 local_files[file_hash] = aux_file
+
+                # Lo borramos del de los disponibles remotos
+                if remote_files.get(file_hash):
+                    del remote_files[file_hash]
 
                 # Una vez actualizada la lista de archivos locales, mandamos a actualizar los anuncios
                 announce_forever.set_announcements()
