@@ -64,7 +64,7 @@ download_manager = (None, {}) # (file_name, {socket: (id_chunk, chunk, recieved,
 def process_file_chunk(sock, chunk):
     global download_manager
     download_manager[1][sock][1] = chunk[12:]
-    download_manager[1][sock][2] = True
+    download_manager[1][sock][2] -= 1 
 
     ready = 0
     total_connections = len(download_manager[1])
