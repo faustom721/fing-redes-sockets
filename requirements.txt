@@ -1,0 +1,4 @@
+linuxfd==1.4.4
+prettytable==1.0.1
+termcolor==1.1.0
+wcwidth==0.2.5
