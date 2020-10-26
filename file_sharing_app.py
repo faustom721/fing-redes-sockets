@@ -59,10 +59,18 @@ def service_connection(key, mask):
         recv_data = recv_msg(socket)
         if recv_data:
             data = recv_data.decode('utf-8')
+            # Me pidieron chunk
             if data.splitlines()[0] == "DOWNLOAD":
                 response = telnet.process_download(data)
                 send_msg(socket, response)
-                print("Chunk enviado")
+                print('Chunk enviado')
+            
+            # Error en pedido de descarga
+            elif data.splitlines()[0] == "DOWNLOAD FAILURE":
+                success = telnet.re_request_download(socket)
+                if not success:
+                    telnet_connections[0].send(b'DESCARGA FALLIDA\n')
+
             else:
                 download_manager = telnet.process_file_chunk(socket, data)
                 sel.unregister(socket)
